@@ -26,9 +26,14 @@ kernel_stack:
 ;///////////////////////////////////////
 ;スタートアップルーチンの処理がここから始まる
 startup:
-
+; 割り込み禁止
+ 	fclr i
+ 
 ; スタックポインタの設定(カーネル用スタック)
  	ldc  #kernel_stack,ISP
+ 	
+; 割り込みベクタの設定
+ 	ldintb  #0fbd00h	; INTBレジスタにFBD00hを格納する
 
 ;ハードウェアレジスタを初期化する
 	MOV.B	#02h,000Ah	; プロテクトレジスタ←02h
@@ -60,7 +65,25 @@ startup:
 	mov.w #topof bss_NO,A1
 	mov.w #sizeof bss_NO,R3
 	sstr.b
-	
+
+; 割り込み許可
+	fset i
+
 	JMP	_kernel_start	;ラベル _kernel_start に無条件分岐する
 	
+
+;---------------------------------------
+; 割り込み処理
+	.glb sw2_int
+	sw2_int:
+; レジスタを退避する
+	pushm r0,r1,r2,r3,a0,a1,sb,fb
+   
+	.glb _led_type1
+	jsr _led_type1	; 上で定義したC関数へ
+	
+; レジスタを復帰する
+	popm r0,r1,r2,r3,a0,a1,sb,fb
+	reit
+
 	.end				;プログラムの終わり

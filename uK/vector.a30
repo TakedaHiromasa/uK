@@ -1,14 +1,14 @@
-;ƒZƒNƒVƒ‡ƒ“–¼‚ğİ’è
+;ã‚»ã‚¯ã‚·ãƒ§ãƒ³åã‚’è¨­å®š
 .section fvector,ROMDATA
 
-;Šeƒ‰ƒxƒ‹‚ªŠO•”QÆ‚Å‚ ‚é‚±‚Æ‚ğéŒ¾‚·‚é
+;å„ãƒ©ãƒ™ãƒ«ãŒå¤–éƒ¨å‚ç…§ã§ã‚ã‚‹ã“ã¨ã‚’å®£è¨€ã™ã‚‹
 .glb startup
 
-; Ÿ‚É‘±‚­–½—ß‚ªƒŠƒZƒbƒgƒxƒNƒ^(FFFFCh`FFFFFh ‚Ì4byte)‚É”z’u‚³‚ê‚é‚æ‚¤‚É‚·‚é
+; æ¬¡ã«ç¶šãå‘½ä»¤ãŒãƒªã‚»ãƒƒãƒˆãƒ™ã‚¯ã‚¿(FFFFChï½FFFFFh ã®4byte)ã«é…ç½®ã•ã‚Œã‚‹ã‚ˆã†ã«ã™ã‚‹
 .org 0FFFFCh
 
-; ƒ‰ƒxƒ‹startup(‚Ì’l)‚ğƒŠƒZƒbƒgƒxƒNƒ^(ROM—Ìˆæ)‚ÉŠi”[‚·‚é
-;4ƒoƒCƒg‚Ìƒf[ƒ^‚ğROM—Ìˆæ‚ÉŠi”[‚·‚é
+; ãƒ©ãƒ™ãƒ«startup(ã®å€¤)ã‚’ãƒªã‚»ãƒƒãƒˆãƒ™ã‚¯ã‚¿(ROMé ˜åŸŸ)ã«æ ¼ç´ã™ã‚‹
+;4ãƒã‚¤ãƒˆã®ãƒ‡ãƒ¼ã‚¿ã‚’ROMé ˜åŸŸã«æ ¼ç´ã™ã‚‹
 .lword	startup
 
 
@@ -44,8 +44,8 @@
   .lword  dummy_int
   .lword  dummy_int
   .lword  dummy_int
-  .lword  dummy_int
-  .lword  dummy_int  ;29
+  .glb sw2_int
+  .lword  sw2_int    ;29
   .lword  dummy_int  ;30
   .lword  dummy_int
   .lword  dummy_int  ;32
@@ -86,5 +86,5 @@ dummy_int:
   reit
 
 
-;ƒvƒƒOƒ‰ƒ€‚ÌI‚í‚è
+;ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã®çµ‚ã‚ã‚Š
 .end
