@@ -1,12 +1,34 @@
-;セクション名を設定
-.section program,CODE
+;///////////////////////////////////////
+;セクション定義
+;---------------------------------------
+; データセクション
+	.section data_NE,DATA
+	.section data_NO,DATA
+	.section bss_NE,DATA
+	.section bss_NO,DATA
+	.section data_NEI,ROMDATA
+	.section data_NOI,ROMDATA
 
-;各ラベルが外部参照であることを宣言する
-.glb _kernel_start
-.glb startup
+;---------------------------------------  
+; スタックセクション
+	.section stack,DATA
+	.blkb 128
+kernel_stack:
 
+;---------------------------------------
+; プログラムセクション
+	.section program,CODE
+;外部参照であることを宣言する
+	.glb _kernel_start
+	.glb startup
+
+
+;///////////////////////////////////////
 ;スタートアップルーチンの処理がここから始まる
 startup:
+
+; スタックポインタの設定(カーネル用スタック)
+ 	ldc  #kernel_stack,ISP
 
 ;ハードウェアレジスタを初期化する
 	MOV.B	#02h,000Ah	; プロテクトレジスタ←02h
@@ -14,6 +36,30 @@ startup:
 	MOV.B	#00h,0005h	; プロセッサモードレジスタ1← 00h
 	MOV.B	#08h,0008h	; チップセレクト制御レジスタ← 08h 
 	MOV.B	#00h,000Ah	; プロテクトレジスタ←00h
+	
+; RAMの初期化
+ 	; SMOVFを使うために、
+ 	mov.b #topof data_NEI >> 16,R1H		 ; 転送元アドレス上位4ビットをR1Hに格納する。
+ 	mov.w #topof data_NEI & 0FFFFh,A0	 ; 転送元アドレス下位16ビットをA0に格納する。
+ 	mov.w #topof data_NE,A1				 ; 転送先アドレスをA1に格納する。
+ 	mov.w #sizeof data_NE,R3			 ; 転送回数をR3に格納する。
+ 	smovf.b 
+  
+ 	mov.b #topof data_NOI >> 16,R1H
+ 	mov.w #topof data_NOI & 0FFFFh,A0
+ 	mov.w #topof data_NO,A1
+	mov.w #sizeof data_NO,R3
+	smovf.b
+  
+	;sstr を使うために
+	mov.b #0,R0L			; R0にストアするデータを格納する。
+	mov.w #topof bss_NE,A1	; A1に転送先アドレスを格納する。
+	mov.w #sizeof bss_NE,R3 ; R3に転送回数を格納する。
+	sstr.b
+
+	mov.w #topof bss_NO,A1
+	mov.w #sizeof bss_NO,R3
+	sstr.b
 	
 	JMP	_kernel_start	;ラベル _kernel_start に無条件分岐する
 	

@@ -1,9 +1,15 @@
-  .section fvector,ROMDATA  ; セクション名
-  
-  .glb startup              ; 外部参照であることを宣言
-; 次に続く命令がリセットベクタに配置されるようにする
-  .org 0FFFFCh
+;セクション名を設定
+.section fvector,ROMDATA
+
+;各ラベルが外部参照であることを宣言する
+.glb startup
+
+; 次に続く命令がリセットベクタ(FFFFCh～FFFFFh の4byte)に配置されるようにする
+.org 0FFFFCh
+
 ; ラベルstartup(の値)をリセットベクタ(ROM領域)に格納する
-  .lword startup
-  
-  .end
+;4バイトのデータをROM領域に格納する
+.lword	startup
+
+;プログラムの終わり
+.end
