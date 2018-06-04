@@ -1,0 +1,70 @@
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+*.hws
+uK.ARF
+uK.Hbp
+uK.tws
+uK/Comm.log
+uK/Debug/*
+uK.BKW
+uK/Debug_M16C_R8C_FoUSB_UART/Debug_M16C_R8C_FoUSB_UART.hdp
+uK/DefaultSession.BKS
+uK/DefaultSession.hsf
+uK/uK.BKP
+uK/uK.hwp
+uK/uK.nav
+uK/uK.tps
+uK/SessionM16C_R8C_FoUSB_UART.BKS
+uK/SessionM16C_R8C_FoUSB_UART.hsf
+uK/SessionM16C_R8C_FoUSB_UART.ini
+uK/Release/Release.hdp
