@@ -1,20 +1,20 @@
-  .section program,CODE
-  .glb _kernel_start
-  .glb startup
+;セクション名を設定
+.section program,CODE
 
-;プロテクトレジスタ 000Ah
-;プロセッサモードレジスタ０ 0004h
-;プロセッサモードレジスタ１ 0005h
-;チップセレクト制御レジスタ 0008h
+;各ラベルが外部参照であることを宣言する
+.glb _kernel_start
+.glb startup
 
+;スタートアップルーチンの処理がここから始まる
 startup:
-; ハードウェアレジスタの初期化
-  mov.b #02h,000Ah     ; プロテクトレジスタ←02h
-  mov.b #41h,0004h     ; プロセッサモードレジスタ0← 41h
-  mov.b #00h,0005h     ; プロセッサモードレジスタ1← 00h 
-  mov.b #08h,0008h     ; チップセレクト制御レジスタ← 08h 
-  mov.b #00h,000Ah     ; プロテクトレジスタ←00h 
-  
-  jmp _kernel_start    ;ラベル _kernel_start に無条件分岐
 
-  .end
+;ハードウェアレジスタを初期化する
+	MOV.B	#02h,000Ah	; プロテクトレジスタ←02h
+	MOV.B	#41h,0004h	; プロセッサモードレジスタ0← 41h
+	MOV.B	#00h,0005h	; プロセッサモードレジスタ1← 00h
+	MOV.B	#08h,0008h	; チップセレクト制御レジスタ← 08h 
+	MOV.B	#00h,000Ah	; プロテクトレジスタ←00h
+	
+	JMP	_kernel_start	;ラベル _kernel_start に無条件分岐する
+	
+	.end				;プログラムの終わり
