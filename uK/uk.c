@@ -9,13 +9,14 @@
 
 
 /* カーネルで用いるデータ */
-static U8	tcb[NTASK];                 /* タスク制御ブロック */
-static U8	runreg;                     /* Running Task ID */ 
-static U8	resch;                      /* 再スケジューリング要求フラグ */
+TCB_t	tcb[NTASK];                 /* タスク制御ブロック */
+U8		runreg;                     /* Running Task ID */ 
+U8		resch;                      /* 再スケジューリング要求フラグ */
+
+////後回し
 //_____________ pauseQ_head;       /* pause待ちキュー */
 //_____________ semaQ_head[NSEMA]; /* セマフォ待ちキュー */	
 //____ it_HookTid;                 /* 割り込みタスクID */
-
 
 /* ///////////////////////////
 	引数:割込み番号(0～63) 
@@ -41,9 +42,53 @@ void led_type1()   /* 関数名はなんでもいい*/
 
 void kernel_start()
 {
-	enable_interrupt(29);	/* 割込み番号29番を許可 */
+	STACK_FRAME_t *stack_frame;      /* スタックフレーム */
+	
+	int n=0;
+	
+	/* カーネルデータの初期化 */
+	/* (6)タスクの初期化      */
+	for(n=0;n < NTASK; n++){
+		tcb[n].task_start_adr = tetbl[n].task_start_adr;
+		tcb[n].sp             = tetbl[n].sp;
+		tcb[n].task_status    = DORMANT;
+	}
+	
+	/* (7)runreg←0xFF（実行タスク無し）*/
+	runreg = 0xff;
+	
+	/* 
+	(9)システムタスクの起動
+	INITタスクの起動
+	優先度が最高位タスクのTCBのtask_statusの、actbitをオンし、
+	タスクの状態をdormant→ready状態にする。
+	task_statusのBITパターンは00000011になる。
+	また、スタックにparamをセットする。
+	*/
+	tcb[0].task_status = READY;
+ 
+	/*
+	DIAGタスクの起動
+	優先度が最低位タスクのTCBのtask_statusの、actbitをオンし、
+	タスクの状態をdormant→ready状態にする。
+	また、スタックにparamをセットする。
+
+	＊優先度が最下位のDIAGタスクをアイドルタスクとして見れば、
+	このタスクのCPU占有率がシステムのアイドル率に相当する。
+
+	優先度が最高位レベルのINITタスクはシステムリセット後、
+	最初に実行されるタスクであり、アプリケーション側の初期化処理を行い
+	実行終了（exit）する。
+	一方、優先度が最低位のDIAGタスクは常時ready状態のタスクとし
+	システムの診断などを行う。
+	*/
+	tcb[NTASK-1].task_status = READY;
+	
+	/*
+	enable_interrupt(29);	//割込み番号29番を許可
 	
 	while(1){
 		GLED = 0x01;
 	}
+	*/
 }

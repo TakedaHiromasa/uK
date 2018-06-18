@@ -8,12 +8,40 @@
 	.section bss_NO,DATA
 	.section data_NEI,ROMDATA
 	.section data_NOI,ROMDATA
-
+	
 ;---------------------------------------  
 ; スタックセクション
 	.section stack,DATA
-	.blkb 128
+	
+	.glb _init_task_stack
+	.glb _diag_task_stack
+	.glb _task1_stack
+	.glb _task2_stack
+	.glb _task3_stack
+	.glb _task4_stack
+	.glb _task5_stack
+	.glb _task6_stack
+	
+	.blkb 512 ;256
 kernel_stack:
+
+
+  .blkb 128
+_init_task_stack:
+  .blkb 128
+_diag_task_stack:
+  .blkb 128
+_task1_stack:
+  .blkb 128
+_task2_stack:
+  .blkb 128
+_task3_stack:
+  .blkb 128
+_task4_stack:
+  .blkb 128
+_task5_stack:
+  .blkb 128
+_task6_stack:
 
 ;---------------------------------------
 ; プログラムセクション
@@ -30,7 +58,7 @@ startup:
  	fclr i
  
 ; スタックポインタの設定(カーネル用スタック)
- 	ldc  #kernel_stack,ISP
+ 	ldc  #kernel_stack,ISP 
  	
 ; 割り込みベクタの設定
  	ldintb  #0fbd00h	; INTBレジスタにFBD00hを格納する
