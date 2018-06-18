@@ -31,6 +31,6 @@ typedef struct
 } TETBL_t; 
 
 
-extern TETBL_t tetbl[NTASK];
+extern const TETBL_t tetbl[NTASK];
 
 #endif
