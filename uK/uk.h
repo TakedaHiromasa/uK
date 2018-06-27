@@ -18,9 +18,14 @@ typedef struct
 /* スタックフレーム構造体 */
 typedef struct
 {
-  U16 r0; U16 r1; U16 r2; U16 r3; U16 a0; U16 a1; U16 sb; U16 fb;
+  U8 r0; U8 r1; U8 r2; U8 r3; U8 a0; U8 a1; U8 sb; U8 fb;
   U8 save_pc[3];    /* PC(L),PC(M),FR,PC(U)    */  
 } STACK_FRAME_t;
+
+/* レジスタ渡しのアセンブラ関数宣言　*/
+void dispatcher(U8 *sp);
+
+#pragma PARAMETER dispatcher( A0 );
 
 #define ABLEBIT 0b01
 #define ACTBIT  0b10

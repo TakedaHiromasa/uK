@@ -99,6 +99,13 @@ startup:
 
 	JMP	_kernel_start	;ラベル _kernel_start に無条件分岐する
 	
+;---------------------------------------
+; ディスパッチ処理
+	.glb _dispatcher
+_dispatcher:
+	ldc  a0,ISP
+	popm r0,r1,r2,r3,a0,a1,sb,fb
+	reit
 
 ;---------------------------------------
 ; 割り込み処理

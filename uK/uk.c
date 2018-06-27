@@ -42,7 +42,8 @@ void led_type1()   /* 関数名はなんでもいい*/
 
 void kernel_start()
 {
-	STACK_FRAME_t *stack_frame;      /* スタックフレーム */
+	STACK_FRAME_t *stack_frame;      /* スタックフレーム */	
+	U32 pc;
 	
 	int n=0;
 	
@@ -56,6 +57,26 @@ void kernel_start()
 	
 	/* (7)runreg←0xFF（実行タスク無し）*/
 	runreg = 0xff;
+	
+	/* 各タスクの初期スタックフレームを構築する　*/
+	for(n=0; n< NTASK; n++){
+		tcb[n].sp = stack_frame;
+		stack_frame = (STACK_FRAME_t*)tcb[n].sp;
+		
+		pc = (U32)tcb[n].task_start_adr;
+		stack_frame->save_pc[3] = 0xFF & (pc <<  0); //PCの上位バイト
+		stack_frame->save_pc[1] = 0xFF & (pc <<  8); //PCの中位バイト
+	    stack_frame->save_pc[0] = 0xFF & (pc << 16); //PCの下位バイト
+		stack_frame->save_pc[2] = (1 << 6); //フラグレジスタ
+		stack_frame->r0 = 0x1234;
+		stack_frame->r1 = 0x5678;
+		stack_frame->r2 = 0x9abc;
+		stack_frame->r3 = 0xdef0;
+		stack_frame->a0 = 0x1234;
+		stack_frame->a1 = 0x5678;
+		stack_frame->sb = 0x9abc;
+		stack_frame->fb = 0xdef0;
+	}
 	
 	/* 
 	(9)システムタスクの起動
@@ -84,11 +105,13 @@ void kernel_start()
 	*/
 	tcb[NTASK-1].task_status = READY;
 	
-	/*
-	enable_interrupt(29);	//割込み番号29番を許可
 	
+	//enable_interrupt(29);	//割込み番号29番を許可
+	
+	dispatcher(tcb[0].sp); //dispatcher関数を呼ぶ
 	while(1){
 		GLED = 0x01;
 	}
-	*/
+	
 }
+
