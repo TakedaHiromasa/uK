@@ -4,10 +4,6 @@
 
 #define INTREG ((volatile unsigned char *)0x40) /* 割り込み許可レジスタの先頭アドレスを定義する */
 
-#define GLED_ADDR ((volatile unsigned char*)0x4005)
-#define GLED (*(GLED_ADDR))
-
-
 /* カーネルで用いるデータ */
 TCB_t	tcb[NTASK];                 /* タスク制御ブロック */
 U8		runreg;                     /* Running Task ID */ 
@@ -43,7 +39,7 @@ void led_type1()   /* 関数名はなんでもいい*/
 void kernel_start()
 {
 	STACK_FRAME_t *stack_frame;      /* スタックフレーム */	
-	U32 pc;
+	U32 pc=0;
 	
 	int n=0;
 	
@@ -55,18 +51,15 @@ void kernel_start()
 		tcb[n].task_status    = DORMANT;
 	}
 	
-	/* (7)runreg←0xFF（実行タスク無し）*/
-	runreg = 0xff;
-	
-	/* 各タスクの初期スタックフレームを構築する　*/
+		/* 各タスクの初期スタックフレームを構築する　*/
 	for(n=0; n< NTASK; n++){
-		tcb[n].sp = stack_frame;
+		tcb[n].sp = tetbl[n].sp - 20;
 		stack_frame = (STACK_FRAME_t*)tcb[n].sp;
 		
 		pc = (U32)tcb[n].task_start_adr;
-		stack_frame->save_pc[3] = 0xFF & (pc <<  0); //PCの上位バイト
-		stack_frame->save_pc[1] = 0xFF & (pc <<  8); //PCの中位バイト
-	    stack_frame->save_pc[0] = 0xFF & (pc << 16); //PCの下位バイト
+		stack_frame->save_pc[0] = 0xFF & pc; //PCの下位バイト
+		stack_frame->save_pc[1] = 0xFF & (pc >>  8); //PCの中位バイト
+		stack_frame->save_pc[3] = 0xFF & (pc >>  16); //PCの上位バイト
 		stack_frame->save_pc[2] = (1 << 6); //フラグレジスタ
 		stack_frame->r0 = 0x1234;
 		stack_frame->r1 = 0x5678;
@@ -77,6 +70,9 @@ void kernel_start()
 		stack_frame->sb = 0x9abc;
 		stack_frame->fb = 0xdef0;
 	}
+	
+	/* (7)runreg←0xFF（実行タスク無し）*/
+	runreg = 0xff;
 	
 	/* 
 	(9)システムタスクの起動
@@ -106,11 +102,15 @@ void kernel_start()
 	tcb[NTASK-1].task_status = READY;
 	
 	
-	//enable_interrupt(29);	//割込み番号29番を許可
+	enable_interrupt(29);	//割込み番号29番を許可
 	
-	dispatcher(tcb[0].sp); //dispatcher関数を呼ぶ
+	dispatcher(tcb[2].sp); //dispatcher関数を呼ぶ
+	
 	while(1){
 		GLED = 0x01;
+		for(n=0;n<=30000;n++);
+		GLED = 0x02;
+		for(n=0;n<=30000;n++);
 	}
 	
 }

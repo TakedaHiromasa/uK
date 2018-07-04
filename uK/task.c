@@ -1,35 +1,52 @@
 #include "syscall.h"
+#include "uk.h"
 
-void init_task()
-{
+void init_task(){
+	while(1){
+		SEG0 = 0b10000 | 0x00;
+		}
 	}
 
-void diag_task()
-{
+void diag_task(){
+		while(1){
+		SEG0 = 0b10000 | 0x0F;
+		}
 	}
 
-void task1()
-{
+void task1(){
+		while(1){
+		SEG0 = 0b10000 | 0x01;
+		}
 	}
 
-void task2()
-{
+void task2(){
+		while(1){
+		SEG0 = 0b10000 | 0x02;
+		}
 	}
 
-void task3()
-{
+void task3(){
+		while(1){
+		SEG0 = 0b10000 | 0x03;
+		}
 	}
 
-void task4()
-{
+void task4(){
+		while(1){
+		SEG0 = 0b10000 | 0x04;
+		}
 	}
 
-void task5()
-{
+void task5(){
+		while(1){
+		SEG0 = 0b10000 | 0x05;
+		}
 	}
 
-void task6()
-{
+void task6(){
+		while(1){
+		SEG0 = 0b10000 | 0x05;
+		}
 	}
 
 extern U8 init_task_stack[];
