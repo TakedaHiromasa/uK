@@ -14,6 +14,7 @@
 #define GLED_ADDR ((volatile unsigned char*)0x4005)
 #define GLED (*(GLED_ADDR))
 
+/* 7セグLED I/Oアドレス */
 #define SEG0_ADDR ((volatile unsigned char*)0x4004)
 #define SEG0 (*(SEG0_ADDR))
 
@@ -28,7 +29,7 @@ typedef struct
  U8 	next_Tid;
  void	*parameter;
  U8		reserved[2]; 
- U16		pause_counter;
+ U16	pause_counter;
  task_p	task_start_adr;   /* syscall.h内の宣言を使う */
  U8		*sp;
  char	name[2];

@@ -43,6 +43,23 @@ _task5_stack:
   .blkb 128
 _task6_stack:
 
+
+;///////////////////////////////////////
+;シンボル定義
+;---------------------------------------
+; システムコールID
+STARTTASK	.equ 0
+EXIT		.equ 1
+PAUSE		.equ 2
+RESUMETASK	.equ 3
+RESETTASK	.equ 4
+GETTID		.equ 5
+TAKESEMA	.equ 6
+GIVESEMA	.equ 7
+TASSEMA		.equ 8
+HOOKITTASK	.equ 9
+
+
 ;---------------------------------------
 ; プログラムセクション
 	.section program,CODE
@@ -120,5 +137,22 @@ _dispatcher:
 ; レジスタを復帰する
 	popm r0,r1,r2,r3,a0,a1,sb,fb
 	reit
+
+;---------------------------------------
+; システムコール
+SOFTINT .equ 32
+
+; システムコールエントリ
+	.glb _SVC_startTASK
+_SVC_startTASK:
+ 	mov.w #STARTTASK,R0
+ 	int   #SOFTINT
+ 	rts
+  
+	.glb _SVC_exit
+_SVC_exit:
+	mov.w #EXIT,R0
+	int   #SOFTINT
+	rts
 
 	.end				;プログラムの終わり

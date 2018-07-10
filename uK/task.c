@@ -1,13 +1,13 @@
 #include "syscall.h"
 #include "uk.h"
 
-void init_task(){
+void init_task(){ //LED(0)
 	while(1){
 		SEG0 = 0b10000 | 0x00;
 		}
 	}
 
-void diag_task(){
+void diag_task(){ //LED(F)
 		while(1){
 		SEG0 = 0b10000 | 0x0F;
 		}

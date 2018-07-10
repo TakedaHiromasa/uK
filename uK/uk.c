@@ -35,6 +35,28 @@ void led_type1()   /* 関数名はなんでもいい*/
 	}
 }
 
+/* タスクスケジューラ */
+void scheduler()
+{
+	int n;
+	/*スケジューリングの要否の判定*/
+	//reschの内容が0ならスケジューリング不要なので、ディスパッチ処理部へ移る。
+	if(resch == 0){
+		dispatcher(tcb[runreg].sp);
+	}
+	
+	//ready状態のタスクの判別 
+	for(n=0;n < NTASK; n++){
+		if(tcb[n].task_status == READY){
+			runreg = n;
+			dispatcher(tcb[runreg].sp);
+		}
+	}
+	
+	//CPUのIdleループ
+	// DIAGタスクが常にready状態のため、ここは実行されない。
+	while(1);
+}
 
 void kernel_start()
 {
@@ -104,7 +126,8 @@ void kernel_start()
 	
 	enable_interrupt(29);	//割込み番号29番を許可
 	
-	dispatcher(tcb[2].sp); //dispatcher関数を呼ぶ
+	resch=1;
+	scheduler(); 
 	
 	while(1){
 		GLED = 0x01;
