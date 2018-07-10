@@ -2,10 +2,9 @@
 #include "uk.h"
 
 void init_task(){ //LED(0)
-	while(1){
-		SEG0 = 0b10000 | 0x00;
-		}
-	}
+	SEG0 = 0b10000 | 0x00;
+	SVC_startTASK(0,0);
+}
 
 void diag_task(){ //LED(F)
 		while(1){

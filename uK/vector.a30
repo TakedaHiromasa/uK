@@ -47,9 +47,10 @@
   .glb sw2_int
   .lword  sw2_int    ;29
   .lword  dummy_int  ;30
-  .lword  dummy_int
-  .lword  dummy_int  ;32
-  .lword  dummy_int
+  .lword  dummy_int  ;31
+  .glb software_int
+  .lword  software_int  ;32
+  .lword  dummy_int  ;33
   .lword  dummy_int
   .lword  dummy_int
   .lword  dummy_int
