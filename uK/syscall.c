@@ -20,30 +20,53 @@ extern TCB_t tcb[NTASK];
 extern Tid runreg;
 extern U8 resch;
 
-extern task_p
-syscall_tbl[]={
+task_p syscall_tbl[]={
 	startTASK, exitTASK, pauseTASK, resumeTASK, resetTASK,
 	getTID, takeSEMA, giveSEMA, tasSEMA, hookItTASK };
 
 void syscall_entry(void)
 { 
+	syscall_tbl[0]();
 }	
 
 void startTASK(void)
 {
+	STACK_FRAME_t *sf;
+	SYSCALL_ERR_t *sts;
+	Tid tid;
+	void *param;
+
+	sf	= (STACK_FRAME_t*)tcb[runreg].sp;
+	sts = (SYSCALL_ERR_t*)&(sf->r0);
+	tid	= (Tid)(sf->r1)&0xFF;
+	param = (void *)(sf->r2);
 	//①Tidの範囲チェック 
 	//0～NTASK-1ならば②、その他なら⑤ 
 	//注.自タスクの起動は④の起動エラーになる
-
-	//②起動されたタスクがdormant状態かどうか判別、dormantであれば次③、そうでなければ④へ
-
-	//③の処理
-	//task_statusのactbitをONし、&parameterの値をTCB＋２、３にｺﾋﾟｰする
-	//オリジナルの仕様では上のようになっているが、actbitではなくablebitではないかと思う。 杉野(2009.8.3)
-	//&parameterは実際には使っていないので、TCBへのコピーも不要だと思う。杉野(2016.7.13)
-	//sts←0：システムコール成功
-	//runreg > Tid　ならresch←1、そうでなければ、resch←0　 (タスクの優先度の比較)
-	//スケジューラへjump
+	if(0 <= tid && tid < NTASK){
+		//②起動されたタスクがdormant状態かどうか判別、
+		//  dormantであれば次③、そうでなければ④へ
+		if(tsb[tid].task_status == DORMANT){
+			//③の処理
+			//task_statusのactbitをON
+			tsb[tid].task_status = ABLEBIT;	//actbitではなくablebitではないか。
+			
+			//&parameterの値をTCB＋２、３にｺﾋﾟｰする
+			//&parameterは実際には使っていないので、TCBへのコピーも不要
+			
+			sts = 0; //システムコール成功
+			
+			//タスクの優先度の比較
+			if(tid < runreg)
+				resch = 1; //リスケする
+			else
+				resch = 0; //リスケしない
+			
+			scheduler(); //スケジューラへjump
+			
+		}		
+	}else{
+		}
 
 	//④の処理（dormant状態でないタスクを起動）　　
 	//sts←ERR2：システムコール失敗

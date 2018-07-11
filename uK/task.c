@@ -3,7 +3,7 @@
 
 void init_task(){ //LED(0)
 	SEG0 = 0b10000 | 0x00;
-	SVC_startTASK(0,0);
+	SVC_startTASK(3,0);
 }
 
 void diag_task(){ //LED(F)
