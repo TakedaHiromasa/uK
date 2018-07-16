@@ -58,39 +58,42 @@ void scheduler()
 	while(1);
 }
 
-void kernel_start()
+void task_init(U8 n)
 {
 	STACK_FRAME_t *stack_frame;      /* スタックフレーム */	
-	U32 pc=0;
+	U32 pc = 0;
 	
-	int n=0;
+	/* (6)タスクの初期化      */
+	tcb[n].task_start_adr = tetbl[n].task_start_adr;
+	tcb[n].sp             = tetbl[n].sp;
+	tcb[n].task_status    = DORMANT;
+	
+	/* 各タスクの初期スタックフレームを構築する　*/
+	tcb[n].sp = tetbl[n].sp - 20;
+	stack_frame = (STACK_FRAME_t*)tcb[n].sp;
+		
+	pc = (U32)tcb[n].task_start_adr;
+	stack_frame->save_pc[0] = 0xFF & pc; //PCの下位バイト
+	stack_frame->save_pc[1] = 0xFF & (pc >>  8); //PCの中位バイト
+	stack_frame->save_pc[3] = 0xFF & (pc >>  16); //PCの上位バイト
+	stack_frame->save_pc[2] = (1 << 6); //フラグレジスタ
+	stack_frame->r0 = 0x1234;
+	stack_frame->r1 = 0x5678;
+	stack_frame->r2 = 0x9abc;
+	stack_frame->r3 = 0xdef0;
+	stack_frame->a0 = 0x1234;
+	stack_frame->a1 = 0x5678;
+	stack_frame->sb = 0x9abc;
+	stack_frame->fb = 0xdef0;
+}
+
+void kernel_start()
+{
+	U8 n=0;
 	
 	/* カーネルデータの初期化 */
-	/* (6)タスクの初期化      */
 	for(n=0;n < NTASK; n++){
-		tcb[n].task_start_adr = tetbl[n].task_start_adr;
-		tcb[n].sp             = tetbl[n].sp;
-		tcb[n].task_status    = DORMANT;
-	}
-	
-		/* 各タスクの初期スタックフレームを構築する　*/
-	for(n=0; n< NTASK; n++){
-		tcb[n].sp = tetbl[n].sp - 20;
-		stack_frame = (STACK_FRAME_t*)tcb[n].sp;
-		
-		pc = (U32)tcb[n].task_start_adr;
-		stack_frame->save_pc[0] = 0xFF & pc; //PCの下位バイト
-		stack_frame->save_pc[1] = 0xFF & (pc >>  8); //PCの中位バイト
-		stack_frame->save_pc[3] = 0xFF & (pc >>  16); //PCの上位バイト
-		stack_frame->save_pc[2] = (1 << 6); //フラグレジスタ
-		stack_frame->r0 = 0x1234;
-		stack_frame->r1 = 0x5678;
-		stack_frame->r2 = 0x9abc;
-		stack_frame->r3 = 0xdef0;
-		stack_frame->a0 = 0x1234;
-		stack_frame->a1 = 0x5678;
-		stack_frame->sb = 0x9abc;
-		stack_frame->fb = 0xdef0;
+		task_init(n);
 	}
 	
 	/* (7)runreg←0xFF（実行タスク無し）*/
@@ -125,6 +128,7 @@ void kernel_start()
 	
 	
 	enable_interrupt(29);	//割込み番号29番を許可
+	enable_interrupt(32);	//割込み番号32番を許可
 	
 	resch=1;
 	scheduler(); 

@@ -178,7 +178,7 @@ software_int:
 ;   再開のためのISPの内容をセット
 	.glb	_tcb		;tcbを外部参照
 	mov.w	#_tcb, A0	;tcb先頭アドレス -> A0
-	sha.b	#1,	R1H		;runreg << 1
+	sha.b	#4,	R1H		;runreg << 4 (ex TASK2 0x02 -> 0x20
 	adc.b	R1H, A0		;tcbにrunregを足すことで配列を移動
 	adc.w	#12, A0		;TCB[runreg] + 12 13
 	stc		ISP, [A0]	;ISPの内容をセット

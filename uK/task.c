@@ -1,52 +1,61 @@
 #include "syscall.h"
 #include "uk.h"
 
+U32 i;
+
 void init_task(){ //LED(0)
 	SEG0 = 0b10000 | 0x00;
-	SVC_startTASK(3,0);
+	for(i=0;i<=50000;i++);
+	SVC_startTASK(1,0);
+	SVC_exit();
 }
 
 void diag_task(){ //LED(F)
-		while(1){
+	while(1){
 		SEG0 = 0b10000 | 0x0F;
-		}
 	}
+}
 
 void task1(){
-		while(1){
-		SEG0 = 0b10000 | 0x01;
-		}
-	}
+	SEG0 = 0b10000 | 0x01;
+	for(i=0;i<=50000;i++);
+	SVC_startTASK(2,0);
+	SVC_exit();
+}
 
 void task2(){
-		while(1){
-		SEG0 = 0b10000 | 0x02;
-		}
-	}
+	SEG0 = 0b10000 | 0x02;
+	for(i=0;i<=50000;i++);
+	SVC_startTASK(3,0);
+	SVC_exit();
+}
 
 void task3(){
-		while(1){
-		SEG0 = 0b10000 | 0x03;
-		}
-	}
+	SEG0 = 0b10000 | 0x03;
+	for(i=0;i<=50000;i++);
+	SVC_startTASK(4,0);
+	SVC_exit();
+}
 
 void task4(){
-		while(1){
-		SEG0 = 0b10000 | 0x04;
-		}
-	}
+	SEG0 = 0b10000 | 0x04;
+	for(i=0;i<=50000;i++);
+	SVC_startTASK(5,0);
+	SVC_exit();
+}
 
 void task5(){
-		while(1){
-		SEG0 = 0b10000 | 0x05;
-		}
-	}
+	SEG0 = 0b10000 | 0x05;
+	for(i=0;i<=50000;i++);
+	SVC_startTASK(6,0);
+	SVC_exit();
+}
 
 void task6(){
-		while(1){
-		SEG0 = 0b10000 | 0x05;
-		}
-	}
+	SEG0 = 0b10000 | 0x05;
+	for(i=0;i<=50000;i++);
+	SVC_exit();
+}
 
 extern U8 init_task_stack[];
 extern U8 task1_stack[];
