@@ -1,13 +1,18 @@
 #include "syscall.h"
 #include "uk.h"
 
-U32 i;
+static U32 i;
 
 void init_task(){ //LED(0)
-	SEG0 = 0b10000 | 0x00;
-	for(i=0;i<=50000;i++);
 	SVC_startTASK(1,0);
-	SVC_exit();
+	
+	while(1){
+		SEG0 = 0b10000 | 0x00;
+		for(i=0;i<=90000;i++);
+		SVC_pause();
+		SVC_resumeTASK(1);
+		//SVC_exit();
+	}
 }
 
 void diag_task(){ //LED(F)
@@ -17,44 +22,73 @@ void diag_task(){ //LED(F)
 }
 
 void task1(){
-	SEG0 = 0b10000 | 0x01;
-	for(i=0;i<=50000;i++);
 	SVC_startTASK(2,0);
-	SVC_exit();
+	
+	while(1){
+		SEG0 = 0b10000 | 0x01;
+		for(i=0;i<=90000;i++);
+		SVC_pause();
+		SVC_resumeTASK(2);
+		//SVC_exit();
+	}
 }
 
 void task2(){
-	SEG0 = 0b10000 | 0x02;
-	for(i=0;i<=50000;i++);
 	SVC_startTASK(3,0);
-	SVC_exit();
+	
+	while(1){
+		SEG0 = 0b10000 | 0x02;
+		for(i=0;i<=90000;i++);
+		SVC_pause();
+		SVC_resumeTASK(3);
+		//SVC_exit();
+	}
 }
 
 void task3(){
-	SEG0 = 0b10000 | 0x03;
-	for(i=0;i<=50000;i++);
 	SVC_startTASK(4,0);
-	SVC_exit();
+	
+	while(1){
+		SEG0 = 0b10000 | 0x03;
+		for(i=0;i<=90000;i++);
+		SVC_pause();
+		SVC_resumeTASK(4);
+		//SVC_exit();
+	}
 }
 
 void task4(){
-	SEG0 = 0b10000 | 0x04;
-	for(i=0;i<=50000;i++);
 	SVC_startTASK(5,0);
-	SVC_exit();
+	
+	while(1){
+		SEG0 = 0b10000 | 0x04;
+		for(i=0;i<=90000;i++);
+		SVC_pause();
+		SVC_resumeTASK(5);
+		//SVC_exit();
+	}
 }
 
 void task5(){
-	SEG0 = 0b10000 | 0x05;
-	for(i=0;i<=50000;i++);
 	SVC_startTASK(6,0);
-	SVC_exit();
+
+	while(1){
+		SEG0 = 0b10000 | 0x05;
+		for(i=0;i<=90000;i++);
+		SVC_pause();
+		SVC_resumeTASK(6);
+		//SVC_exit();
+	}
 }
 
 void task6(){
-	SEG0 = 0b10000 | 0x05;
-	for(i=0;i<=50000;i++);
-	SVC_exit();
+	while(1){
+		SEG0 = 0b10000 | 0x06;
+		for(i=0;i<=90000;i++);
+		SVC_resumeTASK(0);
+		SVC_pause();
+		//SVC_exit();
+	}
 }
 
 extern U8 init_task_stack[];

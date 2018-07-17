@@ -5,12 +5,12 @@
 #define INTREG ((volatile unsigned char *)0x40) /* 割り込み許可レジスタの先頭アドレスを定義する */
 
 /* カーネルで用いるデータ */
-TCB_t	tcb[NTASK];                 /* タスク制御ブロック */
-U8		runreg;                     /* Running Task ID */ 
-U8		resch;                      /* 再スケジューリング要求フラグ */
+TCB_t	 tcb[NTASK];	/* タスク制御ブロック */
+U8		 runreg;		/* Running Task ID */ 
+U8		 resch;			/* 再スケジューリング要求フラグ */
+pauseQ_t pauseQ_head;	/* pause待ちキュー */
 
 ////後回し
-//_____________ pauseQ_head;       /* pause待ちキュー */
 //_____________ semaQ_head[NSEMA]; /* セマフォ待ちキュー */	
 //____ it_HookTid;                 /* 割り込みタスクID */
 
@@ -54,8 +54,7 @@ void scheduler()
 	}
 	
 	//CPUのIdleループ
-	// DIAGタスクが常にready状態のため、ここは実行されない。
-	while(1);
+	while(1); // DIAGタスクが常にready状態のため、ここは実行されない。
 }
 
 void task_init(U8 n)
@@ -128,7 +127,7 @@ void kernel_start()
 	
 	
 	enable_interrupt(29);	//割込み番号29番を許可
-	enable_interrupt(32);	//割込み番号32番を許可
+	//enable_interrupt(32);	//割込み番号32番を許可
 	
 	resch=1;
 	scheduler(); 

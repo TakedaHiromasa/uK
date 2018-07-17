@@ -53,6 +53,9 @@ typedef enum{
 SYSCALL_ERR_t SVC_startTASK(Tid tid, void *parameter);
 #pragma PARAMETER SVC_startTASK(R1L, R2)
 
-SYSCALL_ERR_t SVC_exit(void);
+SYSCALL_ERR_t SVC_exit(void); //自タスクの終了
+SYSCALL_ERR_t SVC_pause(void);//自タスクの休止（指定時間又は∞時間）
+SYSCALL_ERR_t SVC_resumeTASK(Tid);//指定タスクの休止状態からの再開
+#pragma PARAMETER SVC_resumeTASK(R1L)
 
 #endif

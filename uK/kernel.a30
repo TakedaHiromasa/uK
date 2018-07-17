@@ -155,6 +155,18 @@ _SVC_exit:
 	int   #SOFTINT
 	rts
 
+	.glb _SVC_pause
+_SVC_pause:
+	mov.w #PAUSE,R0
+	int   #SOFTINT
+	rts
+	
+	.glb _SVC_resumeTASK
+_SVC_resumeTASK:
+	mov.w #RESUMETASK,R0
+	int   #SOFTINT
+	rts
+
 ;---------------------------------------
 ; ソフトウェア割り込み処理
 	.glb software_int

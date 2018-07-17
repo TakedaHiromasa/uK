@@ -6,9 +6,9 @@
 #define ABLEBIT 0b01
 #define ACTBIT  0b10
 
-#define DORMANT      0b10
+#define DORMANT      0b01
 #define READY        0b11
-#define WAIT         0b01
+#define WAIT         0b10
 #define NON_EXISTENT 0b00
 
 #define GLED_ADDR ((volatile unsigned char*)0x4005)
@@ -29,7 +29,7 @@ typedef struct
  U8 	next_Tid;
  void	*parameter;
  U8		reserved[2]; 
- U16	pause_counter;
+ S16	pause_counter;
  task_p	task_start_adr;   /* syscall.h内の宣言を使う */
  U8		*sp;
  char	name[2];
@@ -48,5 +48,12 @@ typedef struct
   U16 fb;
   U8 save_pc[4];    /* PC(L),PC(M),FR,PC(U) */  
 } STACK_FRAME_t;
+
+/* TCB */
+typedef struct 
+{
+ Tid 	next_Tid;
+ U8 	n;
+} pauseQ_t;
 
 #endif
