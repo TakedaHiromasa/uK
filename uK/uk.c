@@ -8,7 +8,7 @@
 TCB_t	 tcb[NTASK];	/* タスク制御ブロック */
 U8		 runreg;		/* Running Task ID */ 
 U8		 resch;			/* 再スケジューリング要求フラグ */
-pauseQ_t pauseQ_head;	/* pause待ちキュー */
+pauseQ_t pauseQ_head = {0};	/* pause待ちキュー */
 
 ////後回し
 //_____________ semaQ_head[NSEMA]; /* セマフォ待ちキュー */	

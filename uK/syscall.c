@@ -32,6 +32,7 @@ static SYSCALL_ERR_t *sts;
 
 static Tid  tid;
 static void *param;
+static S16  time;
 	
 void syscall_entry(void)
 { 
@@ -40,8 +41,9 @@ void syscall_entry(void)
 	sf	= (STACK_FRAME_t*)tcb[runreg].sp;
 	sts = (SYSCALL_ERR_t*)&(sf->r0);
 	
-	tid	= (Tid)(sf->r1)&0xFF; //必ずR1L
-	param = (void *)(sf->r2); //必ずR2
+	tid   = (Tid)(sf->r1)&0xFF; //必ずR1L
+	param = (void *)(sf->r2);	//必ずR2
+	time  = (U16)(sf->r3);		//必ずR3
 	
 	call_num = *((SYSCALL_ERR_t*)&(sf->r0));
 	
@@ -105,7 +107,10 @@ void exitTASK(void)
 
 void pauseTASK(void)
 {	
-	S32 time = -1;
+	Tid next_Tid;
+	U8  i;
+	
+	//S16 time = -1;
 	//①runregを参照し、当該TCBの ｔask_status の ablebitをオフにする。 
 	//ｔask_status のBITパターンは”00000010”となる。
 	//7/17 0b10はDORMANTのはず。WAITにするならactbitをOFFって「0b01:wait」にすべき
@@ -113,7 +118,7 @@ void pauseTASK(void)
 	
 	//②TCBのpause_counter値にpause時間Tをセット。
 	tcb[runreg].pause_counter = time;
-	/*
+	
 	//③pause時間Tが0の場合⑪へ
 	if(time == 0){
 		//⑪の処理（ pause時間T =0）
@@ -122,12 +127,22 @@ void pauseTASK(void)
 		scheduler(); //スケジューラへjump
 	}else if(time < 0){ //④pause時間Tが負の値の場合は⑧へ、そうでなければ次⑤へ
 		//⑤既に他のタスクが有限時間pause中なら、次⑥の処理へ、そうでなければ⑦へ
-		//⑥pause中のタスクのウェイト時間を、キューの最初のレコードから調べ、 ウェイト時間が小さい順に、レコードが並ぶように キュー及びヘッダーを更新する。(次の「pause_countの値」参照) TCBのpauseカウンタに前のレコードの差分値を入れる。⑧へ
+		if(pauseQ_head.n > 0){
+			//⑥pause中のタスクのウェイト時間を、キューの最初のレコードから調べ、 
+			//ウェイト時間が小さい順に、レコードが並ぶように キュー及びヘッダーを更新する。(次の「pause_countの値」参照) TCBのpauseカウンタに前のレコードの差分値を入れる。⑧へ
+			next_Tid = pauseQ_head.next_Tid;
+			
+			for(i=0;i<NTASK;i++){
+				//if(tcb[runreg].pause_counter < tcb[next_Tid].pause_count)
+				next_Tid = tcb[next_Tid].next_Tid;
+			}
+		}
 		//⑦当該タスクを先頭レコードとし、キュー、ヘッダーを更新する。次⑧へ
+		pauseQ_head.next_Tid = runreg;
+		tcb[runreg].next_Tid = 0xFF;
 	}
-	*/
 	
-	*sts = No_Err; //⑤システムコール成功
+	*sts = No_Err; //⑧システムコール成功
 	resch = 1;
 	scheduler(); //スケジューラへjump
 }
@@ -163,13 +178,13 @@ void resumeTASK(void)
 		}
 		
 		//⑥の処理（ポーズwait状態でないタスクをresumeさせた）
-		*sts = 5;	//sts←ERR5：システムコール失敗
+		*sts = 5;	//ERR5：システムコール失敗
 		resch = 0;	//リスケしない
 		//スケジューラへｊｕｍｐ
 
 	}else{
 		//⑦下記処理（不正Tid)
-		*sts = 1;	//sts←ERR1：システムコール失敗
+		*sts = 1;	//ERR1：システムコール失敗
 		resch = 0;	//リスケしない
 		//スケジューラへｊｕｍｐ
 	}
@@ -182,7 +197,14 @@ void resetTASK(void)
 }
 
 void getTID(void)
-{
+{/*
+	*param = runreg;
+	
+	*sts = No_Err; //システムコール成功
+	resch = 0;
+	
+	scheduler(); //スケジューラへjump
+*/
 }
 
 void takeSEMA(void)
