@@ -86,7 +86,7 @@ void task6(){
 		SEG0 = 0b10000 | 0x06;
 		for(i=0;i<=90000;i++);
 		SVC_resumeTASK(0);
-		SVC_pause(-1);
+		//SVC_pause(-1);
 		//SVC_exit();
 	}
 }

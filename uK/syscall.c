@@ -107,8 +107,9 @@ void exitTASK(void)
 
 void pauseTASK(void)
 {	
-	Tid next_Tid;
+	Tid pre_Tid,next_Tid;
 	U8  i;
+	U16 count = 0;
 	
 	//S16 time = -1;
 	//①runregを参照し、当該TCBの ｔask_status の ablebitをオフにする。 
@@ -125,21 +126,48 @@ void pauseTASK(void)
 		*sts = 6; //ERR6：システムコール失敗
 		resch = 0;
 		scheduler(); //スケジューラへjump
-	}else if(time < 0){ //④pause時間Tが負の値の場合は⑧へ、そうでなければ次⑤へ
+	}else if(time >= 0){ //④pause時間Tが負の値の場合は⑧へ、そうでなければ次⑤へ
 		//⑤既に他のタスクが有限時間pause中なら、次⑥の処理へ、そうでなければ⑦へ
 		if(pauseQ_head.n > 0){
 			//⑥pause中のタスクのウェイト時間を、キューの最初のレコードから調べ、 
 			//ウェイト時間が小さい順に、レコードが並ぶように キュー及びヘッダーを更新する。(次の「pause_countの値」参照) TCBのpauseカウンタに前のレコードの差分値を入れる。⑧へ
 			next_Tid = pauseQ_head.next_Tid;
 			
-			for(i=0;i<NTASK;i++){
-				//if(tcb[runreg].pause_counter < tcb[next_Tid].pause_count)
+			//ヘッドと1番目の間に入れる
+			if(tcb[runreg].pause_counter < tcb[next_Tid].pause_counter){
+				/* 今回のデータがリストの先頭のより小さい場合 */
+				/* 今回のデータを先頭データにする */
+				pauseQ_head.next_Tid = runreg;
+				tcb[runreg].next_Tid = next_Tid;
+			}else{
+				/* データの挿入位置を探す */
+				/*  挿入位置がない場合は，末尾に追加 */
+				/*  挿入位置が見つかったら，挿入 */
+			
+			for(i=1;i<NTASK;i++){
+				count += tcb[next_Tid].pause_counter;
+				
+				if((tcb[runreg].pause_counter - count) < 0){
+					tcb[pre_Tid].next_Tid = runreg;
+					tcb[runreg].next_Tid = next_Tid;
+					tcb[runreg].pause_counter -= count;
+					break;
+				}
+				
+				if(next_Tid == 0xFF){				
+					break;
+				}
+				
 				next_Tid = tcb[next_Tid].next_Tid;
 			}
+			
+		}else{
+			//⑦当該タスクを先頭レコードとし、キュー、ヘッダーを更新する。次⑧へ
+			pauseQ_head.next_Tid = runreg;
+			tcb[runreg].next_Tid = 0xFF;
 		}
-		//⑦当該タスクを先頭レコードとし、キュー、ヘッダーを更新する。次⑧へ
-		pauseQ_head.next_Tid = runreg;
-		tcb[runreg].next_Tid = 0xFF;
+		
+		pauseQ_head.n++;
 	}
 	
 	*sts = No_Err; //⑧システムコール成功
