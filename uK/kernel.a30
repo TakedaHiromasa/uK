@@ -127,7 +127,7 @@ _dispatcher:
 ;---------------------------------------
 ; 割り込み処理
 	.glb sw2_int
-	sw2_int:
+sw2_int:
 ; レジスタを退避する
 	pushm r0,r1,r2,r3,a0,a1,sb,fb
    
@@ -198,9 +198,38 @@ software_int:
 ;(5)ISPに、カーネルのスタックアドレスを代入する。
 	ldc		#kernel_stack,ISP
 
+
 ;(6)割込み処理の各モジュールへJUMPする。
 	.glb	_syscall_entry
 	JMP		_syscall_entry
 
+;---------------------------------------
+; タイマ割り込み処理
+	.glb timer0_int
+timer0_int:
 
+;(2)コンテキスト退避
+;　 PUSHメモリにより各レジスタの内容をスタック上に退避する。
+	pushm r0,r1,r2,r3,a0,a1,sb,fb
+
+;(3)実行中のタスクの番号をrunregから調べる。
+;   runregの内容は0からNTASK-1の間である｡
+	.glb	_runreg		 ;runregを外部参照
+	mov.b	_runreg, R1H ;read address of runreg into R1H
+	
+;(4)runregから求めたTCBのTCB+12、13　に
+;   再開のためのISPの内容をセット
+	.glb	_tcb		;tcbを外部参照
+	mov.w	#_tcb, A0	;tcb先頭アドレス -> A0
+	sha.b	#4,	R1H		;runreg << 4 (ex TASK2 0x02 -> 0x20
+	adc.b	R1H, A0		;tcbにrunregを足すことで配列を移動
+	adc.w	#12, A0		;TCB[runreg] + 12 13
+	stc		ISP, [A0]	;ISPの内容をセット
+	
+;(5)ISPに、カーネルのスタックアドレスを代入する。
+	ldc		#kernel_stack,ISP
+   
+	.glb _timer0_int
+	JMP _timer0_int	; 上で定義したC関数へ
+	
 	.end				;プログラムの終わり

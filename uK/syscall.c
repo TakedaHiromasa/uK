@@ -23,9 +23,9 @@ extern Tid runreg;
 extern U8 resch;
 extern pauseQ_t pauseQ_head;
 
-task_p syscall_tbl[]={
-	startTASK, exitTASK, pauseTASK, resumeTASK, resetTASK,
-	getTID, takeSEMA, giveSEMA, tasSEMA, hookItTASK };
+static task_p syscall_tbl[]={
+				startTASK, exitTASK, pauseTASK, resumeTASK, resetTASK,
+				getTID, takeSEMA, giveSEMA, tasSEMA, hookItTASK };
 
 static STACK_FRAME_t *sf;
 static SYSCALL_ERR_t *sts;
@@ -33,7 +33,57 @@ static SYSCALL_ERR_t *sts;
 static Tid  tid;
 static void *param;
 static S16  time;
+
+
+void timer0_int()   /* タイマ割り込み関数(10msec毎に呼ばれる) */
+{	
+   	static U8 cnt;
 	
+	cnt++;
+	if (cnt%100 == 0){ //1秒毎に実行(10msec * 100 = 1sec)
+		/* LED[A0]と[A1]を交互に点灯させる(タイマ動作確認のため) */
+		GLED &= ~0b011;
+		
+		if(cnt == 100){
+			GLED |= 0b00000001;
+		}else{
+			GLED |= 0b00000010;	
+		}
+		
+		/* タイマ割り込み処理 */
+		if(pauseQ_head.n > 0){
+			tcb[pauseQ_head.next_Tid].pause_counter--; 
+			
+			if(tcb[pauseQ_head.next_Tid].pause_counter != 0){
+				resch=0;
+				scheduler(); //スケジューラへjump
+			}
+			
+			while(tcb[pauseQ_head.next_Tid].pause_counter == 0){
+				tcb[pauseQ_head.next_Tid].task_status = READY;
+				if(pauseQ_head.n == 1){
+					pauseQ_head.next_Tid = 0xFF;
+					pauseQ_head.n--;
+					break;
+				}else{
+					pauseQ_head.next_Tid = tcb[pauseQ_head.next_Tid].next_Tid;
+					pauseQ_head.n--; 
+				}
+			}
+			resch=1;
+			scheduler();
+		}
+	}
+	
+	if(cnt%200 == 0){ //2秒毎に実行(10msec * 100 = 1sec)
+		cnt=0;
+	}
+	
+	resch=0;
+	scheduler(); //スケジューラへjump
+}
+
+
 void syscall_entry(void)
 { 
 	U8 call_num = 0;
@@ -107,8 +157,10 @@ void exitTASK(void)
 
 void pauseTASK(void)
 {	
-	Tid pre_Tid,next_Tid;
+	Tid next_Tid,now_Tid;
 	U8  i;
+	S16 now_counter = 0;
+	S16 run_counter = 0;
 	U16 count = 0;
 	
 	//S16 time = -1;
@@ -131,34 +183,39 @@ void pauseTASK(void)
 		if(pauseQ_head.n > 0){
 			//⑥pause中のタスクのウェイト時間を、キューの最初のレコードから調べ、 
 			//ウェイト時間が小さい順に、レコードが並ぶように キュー及びヘッダーを更新する。(次の「pause_countの値」参照) TCBのpauseカウンタに前のレコードの差分値を入れる。⑧へ
-			next_Tid = pauseQ_head.next_Tid;
+			now_Tid = pauseQ_head.next_Tid;
+			now_counter = tcb[now_Tid].pause_counter;
 			
 			//ヘッドと1番目の間に入れる
-			if(tcb[runreg].pause_counter < tcb[next_Tid].pause_counter){
+			if(tcb[runreg].pause_counter < now_counter){
 				/* 今回のデータがリストの先頭のより小さい場合 */
 				/* 今回のデータを先頭データにする */
 				pauseQ_head.next_Tid = runreg;
-				tcb[runreg].next_Tid = next_Tid;
+				tcb[runreg].next_Tid = now_Tid;
 			}else{
 				/* データの挿入位置を探す */
 				/*  挿入位置がない場合は，末尾に追加 */
 				/*  挿入位置が見つかったら，挿入 */
+				
+				now_Tid  = tcb[now_Tid].next_Tid; //次のデータ
 			
-			for(i=1;i<NTASK;i++){
-				count += tcb[next_Tid].pause_counter;
+				for(i=0;i<pauseQ_head.n;i++){
+					next_Tid = tcb[now_Tid].next_Tid; //1つ先のデータ
+					now_counter = tcb[now_Tid].pause_counter;
+					run_counter = tcb[runreg].pause_counter;
+					
+					count += now_counter;
 				
-				if((tcb[runreg].pause_counter - count) < 0){
-					tcb[pre_Tid].next_Tid = runreg;
-					tcb[runreg].next_Tid = next_Tid;
-					tcb[runreg].pause_counter -= count;
-					break;
+					if((count <= run_counter) && (run_counter <= tcb[next_Tid].pause_counter)){
+						break;
+					}
+					
+					now_Tid  = next_Tid; //次のデータ
 				}
 				
-				if(next_Tid == 0xFF){				
-					break;
-				}
-				
-				next_Tid = tcb[next_Tid].next_Tid;
+				tcb[runreg].next_Tid = next_Tid;
+				tcb[now_Tid].next_Tid = runreg;
+				tcb[runreg].pause_counter -= count;
 			}
 			
 		}else{
@@ -185,11 +242,10 @@ void resumeTASK(void)
 		if(tcb[tid].task_status == WAIT){
 			//③再開タスクがpauseQの中にリンクされている場合は、次④へ、
 			//そうでなければTCBのpauseカウンタが負の値かどうか調べ負の値なら⑤へ、そうでなければ（セマフォ待ちの場合などに該当）⑥へ、
-			if(tid == pauseQ_head.next_Tid){
-				//④再開タスクをキューから外し、ヘッダを更新する。次⑤へ
-			}
+			//④再開タスクをキューから外し、ヘッダを更新する。次⑤へ
+			pauseQ_head.next_Tid = tcb[tid].next_Tid;
 			
-			if(tcb[tid].pause_counter < 0 || tid == pauseQ_head.next_Tid){
+			//if(tcb[tid].pause_counter < 0 || tid == pauseQ_head.next_Tid){
 				//⑤の処理内容
 				tcb[tid].task_status = READY;	//task_statusをablebitをONにする。
 				tcb[tid].pause_counter = 0;		//この処理は念のため
@@ -202,7 +258,7 @@ void resumeTASK(void)
 					resch = 0; //リスケしない
 					
 				scheduler(); //スケジューラへjump
-			}
+			//}
 		}
 		
 		//⑥の処理（ポーズwait状態でないタスクをresumeさせた）
@@ -222,17 +278,44 @@ void resumeTASK(void)
 
 void resetTASK(void)
 {
+	if(tid < NTASK){
+		if(runreg != tid){
+			//③の処理
+			//指定タスクがwait状態でなければ⑤へ、wait状態なら④へ
+			if(tcb[tid].task_status == WAIT){
+				
+			}
+			
+			//⑤の処理
+			tcb[tid].task_status = DORMANT; //当該タスクをdormant状態とする。即ち、ablebitオン、actbitオフとする。
+			task_init(tid); //タスクの初期化 TCBを参照し、タスクのスタックフレームを初期化する。
+			*sts = No_Err;	//システムコール成功
+			resch = 1; 		//リスケする
+			//スケジューラへjump
+		}else{
+			//⑦下記処理（自タスクをリセット）
+			*sts = 20; //ERR20：システムコール失敗
+			resch = 0; //resch←0
+			//スケジューラへjump
+		}
+	}else{
+		//⑥下記処理（不正Tid)
+		*sts = 1;  //ERR1：システムコール失敗
+		resch = 0; //リスケしない
+		//スケジューラへjump
+	}
+	
+	scheduler(); //スケジューラへjump
 }
 
 void getTID(void)
-{/*
-	*param = runreg;
+{
+	memcpy(param, &runreg, 2); //runregの内容を&paramが示す領域に格納。（16bit）
 	
 	*sts = No_Err; //システムコール成功
 	resch = 0;
 	
 	scheduler(); //スケジューラへjump
-*/
 }
 
 void takeSEMA(void)

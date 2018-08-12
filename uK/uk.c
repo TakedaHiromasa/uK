@@ -29,16 +29,17 @@ void enable_interrupt(unsigned char n)
 void led_type1()   /* 関数名はなんでもいい*/
 {	
    /*  LED を光らせて（光ったことが分かるように）終わる*/
-   	int i=0;
-	for(i=0;i<=20000;i++){
-		GLED = 0x03;
+   	U16 i = 0;
+	for(i=0;i<=30000;i++){
+		GLED = 0b00000100;
 	}
+	GLED = 0x00;
 }
 
 /* タスクスケジューラ */
 void scheduler()
 {
-	int n;
+	U16 n;
 	/*スケジューリングの要否の判定*/
 	//reschの内容が0ならスケジューリング不要なので、ディスパッチ処理部へ移る。
 	if(resch == 0){
@@ -86,6 +87,21 @@ void task_init(U8 n)
 	stack_frame->fb = 0xdef0;
 }
 
+
+void timer0_init()
+{
+	//32 * (3124 + 1) / 10MHz = 0.01(sec) = 10(msec)
+	U16 cnt_a0 = 3124;
+	
+	UDF   = 0x00; // ダウンカウントに設定 
+	TA0MR = 0x80; // タイマーのモードを設定(プリスケーラ 1/32)
+	memcpy(TA0L_ADDR, &cnt_a0, 2); // タイマーのカウント値を初期化
+	TA0IC = 0x00; // タイマー割り込み要求ビットをクリア
+	
+	TABSR = 0x01; // タイマーA0だけを開始 
+}
+
+
 void kernel_start()
 {
 	U8 n=0;
@@ -125,19 +141,16 @@ void kernel_start()
 	*/
 	tcb[NTASK-1].task_status = READY;
 	
+	timer0_init();
 	
-	enable_interrupt(29);	//割込み番号29番を許可
-	//enable_interrupt(32);	//割込み番号32番を許可
+	enable_interrupt(21);	//割込み番号21番を許可(タイマ割り込み)
+	enable_interrupt(29);	//割込み番号29番を許可(ソフトウェア割り込み)
+	enable_interrupt(32);	//割込み番号32番を許可(SW2割り込み)
 	
 	resch=1;
 	scheduler(); 
 	
-	while(1){
-		GLED = 0x01;
-		for(n=0;n<=30000;n++);
-		GLED = 0x02;
-		for(n=0;n<=30000;n++);
-	}
+	while(1);
 	
 }
 

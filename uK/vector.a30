@@ -36,7 +36,8 @@
   .lword  dummy_int
   .lword  0fcb6bh    ;19
   .lword  0fcb6bh    ;20
-  .lword  dummy_int
+  .glb timer0_int
+  .lword  timer0_int ;21
   .lword  dummy_int
   .lword  dummy_int
   .lword  dummy_int

@@ -9,6 +9,7 @@ void init_task(){ //LED(0)
 	while(1){
 		SEG0 = 0b10000 | 0x00;
 		for(i=0;i<=90000;i++);
+		//SVC_pause(60);
 		SVC_pause(-1);
 		SVC_resumeTASK(1);
 		//SVC_exit();
@@ -27,6 +28,7 @@ void task1(){
 	while(1){
 		SEG0 = 0b10000 | 0x01;
 		for(i=0;i<=90000;i++);
+		//SVC_pause(50);
 		SVC_pause(-1);
 		SVC_resumeTASK(2);
 		//SVC_exit();
@@ -39,6 +41,7 @@ void task2(){
 	while(1){
 		SEG0 = 0b10000 | 0x02;
 		for(i=0;i<=90000;i++);
+		//SVC_pause(40);
 		SVC_pause(-1);
 		SVC_resumeTASK(3);
 		//SVC_exit();
@@ -51,6 +54,7 @@ void task3(){
 	while(1){
 		SEG0 = 0b10000 | 0x03;
 		for(i=0;i<=90000;i++);
+		//SVC_pause(30);
 		SVC_pause(-1);
 		SVC_resumeTASK(4);
 		//SVC_exit();
@@ -63,6 +67,7 @@ void task4(){
 	while(1){
 		SEG0 = 0b10000 | 0x04;
 		for(i=0;i<=90000;i++);
+		//SVC_pause(20);
 		SVC_pause(-1);
 		SVC_resumeTASK(5);
 		//SVC_exit();
@@ -75,6 +80,7 @@ void task5(){
 	while(1){
 		SEG0 = 0b10000 | 0x05;
 		for(i=0;i<=90000;i++);
+		//SVC_pause(10);
 		SVC_pause(-1);
 		SVC_resumeTASK(6);
 		//SVC_exit();

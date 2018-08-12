@@ -2,6 +2,7 @@
 #define UK_H
 
 #include "syscall.h"
+#include <string.h>
 
 #define ABLEBIT 0b01
 #define ACTBIT  0b10
@@ -21,6 +22,32 @@
 /* レジスタ渡しのアセンブラ関数宣言　*/
 extern void dispatcher(U8 *sp);
 #pragma PARAMETER dispatcher(A0);
+
+/* ///////////////
+ タイマ関係
+/////////////// */
+/* タイマ0モードレジスタアドレス(TA0MR) */
+#define TA0MR_ADDR ((volatile unsigned char*)0x0396)
+#define TA0MR (*(TA0MR_ADDR))
+
+/* タイマ0レジスタ(TA0) */
+#define TA0L_ADDR ((volatile unsigned char*)0x0386)
+#define TA0L (*(TA0L_ADDR))
+#define TA0H_ADDR ((volatile unsigned char*)0x0387)
+#define TA0H (*(TA0H_ADDR))
+
+/* カウント開始フラグ */
+#define TABSR_ADDR ((volatile unsigned char*)0x0380)
+#define TABSR (*(TABSR_ADDR))
+
+/* アップダウンフラグ */
+#define UDF_ADDR ((volatile unsigned char*)0x0384)
+#define UDF (*(UDF_ADDR))
+
+/* タイマ0割り込み許可レベル */
+#define TA0IC_ADDR ((volatile unsigned char*)0x0055)
+#define TA0IC (*(TA0IC_ADDR))
+#define IR_TA0IC ((TA0IC >> 3) & 0b00000001)
 
 /* TCB */
 typedef struct 

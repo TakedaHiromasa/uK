@@ -50,7 +50,7 @@ typedef enum{
 } SYSCALL_ERR_t;
 
 /* システムコール */
-SYSCALL_ERR_t SVC_startTASK(Tid tid, void *parameter);
+SYSCALL_ERR_t SVC_startTASK(Tid tid, void *param);
 #pragma PARAMETER SVC_startTASK(R1L, R2)
 
 SYSCALL_ERR_t SVC_exit(void); //自タスクの終了
@@ -60,5 +60,11 @@ SYSCALL_ERR_t SVC_pause(S16);//自タスクの休止（指定時間又は∞時�
 
 SYSCALL_ERR_t SVC_resumeTASK(Tid);//指定タスクの休止状態からの再開
 #pragma PARAMETER SVC_resumeTASK(R1L)
+
+SYSCALL_ERR_t SVC_resetTASK(Tid);//指定タスクの強制終了
+#pragma PARAMETER SVC_resetTASK(R1L)
+
+SYSCALL_ERR_t SVC_getTid(void *param);
+#pragma PARAMETER SVC_getTid(R2)
 
 #endif
